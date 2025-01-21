@@ -1,0 +1,93 @@
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  labels:
+    app: winweb03
+    app.kubernetes.io/part-of: 3-Tier-App
+    vm.kubevirt.io/template.revision: '1'
+    vm.kubevirt.io/template.version: v0.25.0
+  name: winweb03
+  namespace: "${n}"
+spec:
+  dataVolumeTemplates:
+  - apiVersion: cdi.kubevirt.io/v1beta1
+    kind: DataVolume
+    metadata:
+      name: winweb03
+    spec:
+      source:
+        http:
+          url: 'http://s3.us-east.cloud-object-storage.appdomain.cloud/roadshowocpvirt/winweb01.qcow2'
+      storage:
+        resources:
+          requests:
+            storage: 90Gi
+  running: true
+  template:
+    metadata:
+      labels:
+        app: winnetworking
+    spec:
+      domain:
+        clock:
+          timer:
+            hpet:
+              present: false
+            hyperv: {}
+            pit:
+              tickPolicy: delay
+            rtc:
+              tickPolicy: catchup
+          utc: {}
+        cpu:
+          cores: 1
+          sockets: 2
+          threads: 1
+        devices:
+          disks:
+          - disk:
+              bus: sata
+            name: rootdisk
+          inputs:
+          - bus: usb
+            name: tablet
+            type: tablet
+          interfaces:
+          - masquerade: {}
+            model: e1000e
+            name: default
+        features:
+          acpi: {}
+          apic: {}
+          hyperv:
+            frequencies: {}
+            ipi: {}
+            relaxed: {}
+            reset: {}
+            runtime: {}
+            spinlocks:
+              spinlocks: 8191
+            synic: {}
+            synictimer:
+              direct: {}
+            tlbflush: {}
+            vapic: {}
+            vpindex: {}
+          smm:
+            enabled: true
+        firmware:
+          bootloader:
+            efi: {}
+        machine:
+          type: q35
+        resources:
+          requests:
+            memory: 6Gi
+      networks:
+      - name: default
+        pod: {}
+      terminationGracePeriodSeconds: 3600
+      volumes:
+      - dataVolume:
+          name: winweb03
+        name: rootdisk
