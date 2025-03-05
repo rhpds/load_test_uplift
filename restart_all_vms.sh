@@ -6,39 +6,16 @@ namespaces=""
 namespaces=$(oc get ns | awk '/windowsmesh/ { print $1 }')
 echo $namespaces
 
-# does the VM already exist in the namespace?
-namespaces_needing_vms=""
 n=""
+
 
 for n in $namespaces
 do
-	echo "checking $n for winweb03"
-	echo $n
-	if $(oc get vms winweb03 -n $n)
-	then
-		continue
-	else
-		echo "adding $n to list of namespaces."
-		namespaces_needing_vms+="$n "
-	fi
+	virtctl restart winweb01 -n $n
+	virtctl restart winweb02 -n $n
+	virtctl restart database -n $n
 done
 
-echo $namespaces_needing_vms
-
-# in whatever namespace there aren't any, deploy them.
-echo "creating VMs"
-
-for n in $namespaces_needing_vms
-do
-	echo "#### Creating VM winweb03 in namespace $n"
-	export n
-	oc apply -f - <<EOF
-$(cat winweb03.yaml | envsubst)
-EOF
-
-done
-
-#
 # make the the VM works
 #
 
@@ -54,7 +31,7 @@ watch "echo 'VMs per Metal Node:'; oc get vmi -A -o jsonpath='{.items[*].metadat
         | sort  \
         | uniq -c; \
         echo 'VMs not yet Running:'; \
-        oc get vms -A -l app=winweb03 | grep -v Running"
+        oc get vms -A | grep -v Running"
 
 #watch -n10 "echo 'Created winweb03:'; oc get vms -A -l app=winweb03; echo 'Metal Node Capacity:';oc adm top nodes -l node.kubernetes.io/instance-type=$machine_type"
 

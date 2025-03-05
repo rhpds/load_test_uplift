@@ -10,35 +10,23 @@ echo $namespaces
 namespaces_needing_vms=""
 n=""
 
+patch='{ "spec": { "template": { "metadata": { "annotations": { "sidecar.istio.io/inject": "true" } } } } }'
+
 for n in $namespaces
 do
-	echo "checking $n for winweb03"
-	echo $n
-	if $(oc get vms winweb03 -n $n)
-	then
-		continue
-	else
-		echo "adding $n to list of namespaces."
-		namespaces_needing_vms+="$n "
-	fi
+	echo "Creating ServiceMeshMember CRs in namespaces $n"
+	oc apply -f ./service_mesh_member.yaml -n $n
+	echo "oc annotating the winweb01 and winweb02"
+
+	oc patch vm winweb01 --type=merge --patch='{"spec":{"template":{"metadata":{"annotations":{ "sidecar.istio.io/inject": "true"}}}}}' -n $n
+	oc patch vm winweb02 --type=merge --patch='{"spec":{"template":{"metadata":{"annotations":{ "sidecar.istio.io/inject": "true"}}}}}' -n $n
+	oc patch vm database --type=merge --patch='{"spec":{"template":{"metadata":{"annotations":{ "sidecar.istio.io/inject": "true"}}}}}' -n $n
+
+	virtctl restart winweb01 -n $n
+	virtctl restart winweb02 -n $n
+	virtctl restart database -n $n
 done
 
-echo $namespaces_needing_vms
-
-# in whatever namespace there aren't any, deploy them.
-echo "creating VMs"
-
-for n in $namespaces_needing_vms
-do
-	echo "#### Creating VM winweb03 in namespace $n"
-	export n
-	oc apply -f - <<EOF
-$(cat winweb03.yaml | envsubst)
-EOF
-
-done
-
-#
 # make the the VM works
 #
 
@@ -54,7 +42,7 @@ watch "echo 'VMs per Metal Node:'; oc get vmi -A -o jsonpath='{.items[*].metadat
         | sort  \
         | uniq -c; \
         echo 'VMs not yet Running:'; \
-        oc get vms -A -l app=winweb03 | grep -v Running"
+        oc get vms -A | grep -v Running"
 
 #watch -n10 "echo 'Created winweb03:'; oc get vms -A -l app=winweb03; echo 'Metal Node Capacity:';oc adm top nodes -l node.kubernetes.io/instance-type=$machine_type"
 
