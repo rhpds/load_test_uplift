@@ -7,7 +7,7 @@
 
 
 namespaces="windowsmesh-user1"
-namespaces=$(oc get ns | awk '/windows.*user. / { print $1 }')
+namespaces=$(oc get ns | awk '/windows.*user.* / { print $1 }')
 echo "################################"
 echo "Namespaces to clean up:"
 echo "$namespaces"
