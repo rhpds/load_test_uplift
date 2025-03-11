@@ -24,7 +24,7 @@ do
 	echo "Checking $n for unknown VMs..."
 	bad_vms=$(oc get vms -n $n -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' | grep -vE 'winweb01|winweb02|database')
 	echo "Bad VMs: $bad_vms"
-	oc delete vm $bad_vms -n $n &
+	#oc delete vm $bad_vms -n $n &
 
 	# DELETE OSSM OBJECTS
         echo
