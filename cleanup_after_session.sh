@@ -22,9 +22,9 @@ do
 	# DELETE EXTRANEOUS VMS
 	echo
 	echo "Checking $n for unknown VMs..."
-	bad_vms=$(oc get vms -n $n -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' | grep -vE 'winweb01|winweb02')
+	bad_vms=$(oc get vms -n $n -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' | grep -vE 'winweb01|winweb02|database')
 	echo "Bad VMs: $bad_vms"
-	# oc delete vm $bad_vms -n $n &
+	oc delete vm $bad_vms -n $n &
 
 	# DELETE OSSM OBJECTS
         echo
@@ -33,11 +33,11 @@ do
 
 	IFS=$'\n' read -r -d '' -a delete_commands_list  <<< "$delete_commands"
 
-	for delete_cmd in "${delete_commands_list[@]}"; 
-	do 
+	for delete_cmd in "${delete_commands_list[@]}";
+	do
 		echo "Deleting: $delete_cmd"
 		eval $delete_cmd
 	done
 	echo "################################"
-		
+
 done
