@@ -85,8 +85,8 @@ spec:
           type: q35
         resources:
           requests:
-            memory: 6Gi
-      evictionStrategy: None
+            memory: 1Gi
+      evictionStrategy: LiveMigrate
       networks:
       - name: default
         pod: {}
