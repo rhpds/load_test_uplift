@@ -1,7 +1,10 @@
 #!/bin/bash
 
 # for each windowsmesh namespace
+#
+# example deployer_domain: apps.rosa-22krx.5ljt.p1.openshiftapps.com
 
+deployer_domain=$1
 namespaces=""
 namespaces=$(oc get ns | awk '/windowsmesh/ { print $1 }')
 echo $namespaces
@@ -17,10 +20,15 @@ do
 	echo "Creating ServiceMeshMember CRs in namespaces $n..."
 	oc apply -f ./service_mesh_member.yaml -n $n
 
-	# echo "oc annotating the winweb01 and winweb02"
-	# oc patch vm winweb01 --type=merge --patch='{"spec":{"template":{"metadata":{"annotations":{ "sidecar.istio.io/inject": "true"}}}}}' -n $n
-	# oc patch vm winweb02 --type=merge --patch='{"spec":{"template":{"metadata":{"annotations":{ "sidecar.istio.io/inject": "true"}}}}}' -n $n
-	# oc patch vm database --type=merge --patch='{"spec":{"template":{"metadata":{"annotations":{ "sidecar.istio.io/inject": "true"}}}}}' -n $n
+	# create OSSM object by creating a new file from the template
+	user_index=$(echo $n | awk '{gsub(/[^0-9]/, ""); print}')
+	sed "s/{{user_index}}/$user_index/g; s/{{deployer_domain}}/$deployer_domain/g" ossm_resources.yaml > ossm_resources_user.yaml
+	oc apply -f ./ossm_resources_user.yaml -n $n
+
+	echo "oc annotating the winweb01 and winweb02 and database"
+	oc patch vm winweb01 --type=merge --patch='{"spec":{"template":{"metadata":{"annotations":{ "sidecar.istio.io/inject": "true"}}}}}' -n $n
+	oc patch vm winweb02 --type=merge --patch='{"spec":{"template":{"metadata":{"annotations":{ "sidecar.istio.io/inject": "true"}}}}}' -n $n
+	oc patch vm database --type=merge --patch='{"spec":{"template":{"metadata":{"annotations":{ "sidecar.istio.io/inject": "true"}}}}}' -n $n
 
 	echo "Restarting VMs..."
 	virtctl restart winweb01 -n $n
