@@ -10,18 +10,19 @@ echo $namespaces
 namespaces_needing_vms=""
 n=""
 
-patch='{ "spec": { "template": { "metadata": { "annotations": { "sidecar.istio.io/inject": "true" } } } } }'
+#patch='{ "spec": { "template": { "metadata": { "annotations": { "sidecar.istio.io/inject": "true" } } } } }'
 
 for n in $namespaces
 do
-	echo "Creating ServiceMeshMember CRs in namespaces $n"
+	echo "Creating ServiceMeshMember CRs in namespaces $n..."
 	oc apply -f ./service_mesh_member.yaml -n $n
-	echo "oc annotating the winweb01 and winweb02"
 
-	oc patch vm winweb01 --type=merge --patch='{"spec":{"template":{"metadata":{"annotations":{ "sidecar.istio.io/inject": "true"}}}}}' -n $n
-	oc patch vm winweb02 --type=merge --patch='{"spec":{"template":{"metadata":{"annotations":{ "sidecar.istio.io/inject": "true"}}}}}' -n $n
-	oc patch vm database --type=merge --patch='{"spec":{"template":{"metadata":{"annotations":{ "sidecar.istio.io/inject": "true"}}}}}' -n $n
+	# echo "oc annotating the winweb01 and winweb02"
+	# oc patch vm winweb01 --type=merge --patch='{"spec":{"template":{"metadata":{"annotations":{ "sidecar.istio.io/inject": "true"}}}}}' -n $n
+	# oc patch vm winweb02 --type=merge --patch='{"spec":{"template":{"metadata":{"annotations":{ "sidecar.istio.io/inject": "true"}}}}}' -n $n
+	# oc patch vm database --type=merge --patch='{"spec":{"template":{"metadata":{"annotations":{ "sidecar.istio.io/inject": "true"}}}}}' -n $n
 
+	echo "Restarting VMs..."
 	virtctl restart winweb01 -n $n
 	virtctl restart winweb02 -n $n
 	virtctl restart database -n $n
