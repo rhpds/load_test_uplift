@@ -16,9 +16,12 @@ spec:
       name: winweb03
     spec:
       source:
-        pvc:
-          name: winweb01
+        snapshot:
+          name: winweb03-volumesnapshot
           namespace: default
+        # pvc:
+        #   name: winweb01
+        #   namespace: default
         # http:
         #   url: 'http://s3.us-east.cloud-object-storage.appdomain.cloud/roadshowocpvirt/winweb01.qcow2'
       storage:
