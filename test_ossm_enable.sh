@@ -4,7 +4,7 @@
 #
 # example deployer_domain: apps.rosa-22krx.5ljt.p1.openshiftapps.com
 
-deployer_domain=$1
+deployer_domain=$(oc get ingresscontroller default -n openshift-ingress-operator -o jsonpath='{$.status.domain}')
 namespaces=""
 namespaces=$(oc get ns | awk '/windowsmesh/ { print $1 }')
 echo $namespaces
