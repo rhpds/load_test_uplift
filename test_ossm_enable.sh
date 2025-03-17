@@ -26,8 +26,8 @@ do
 	oc apply -f ./ossm_resources_user.yaml -n $n
 
 	echo "oc annotating the winweb01 and winweb02 and database"
-	oc patch vm winweb01 -n $n --type=merge --patch='{"spec":{"template":{"metadata":{"annotations":{"sidecar.istio.io/inject": "true","proxy.istio.io/config": "holdApplicationUntilProxyStarts: true\nproxyMetadata:\n  ISTIO_META_DNS_CAPTURE: 'false'\n  ISTIO_META_DNS_AUTO_ALLOCATE: 'false'\n" }}}}}'
-	oc patch vm winweb02 -n $n --type=merge --patch='{"spec":{"template":{"metadata":{"annotations":{"sidecar.istio.io/inject": "true","proxy.istio.io/config": "holdApplicationUntilProxyStarts: true\nproxyMetadata:\n  ISTIO_META_DNS_CAPTURE: 'false'\n  ISTIO_META_DNS_AUTO_ALLOCATE: 'false'\n" }}}}}'
+	oc patch vm winweb01 -n $n --type=merge --patch="$(cat ossm_patch.yaml)"
+	oc patch vm winweb02 -n $n --type=merge --patch="$(cat ossm_patch.yaml)"
 	oc patch vm database --type=merge --patch='{"spec":{"template":{"metadata":{"annotations":{ "sidecar.istio.io/inject": "true"}}}}}' -n $n
 
 	echo "Restarting VMs..."
