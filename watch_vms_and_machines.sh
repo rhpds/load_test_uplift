@@ -1,6 +1,7 @@
 #!/bin/bash
 
-watch "echo 'VMs per Metal Node:'; oc get vmi -A -o jsonpath='{.items[*].metadata.labels.kubevirt\.io/nodeName}' \
+watch "echo -n 'VMs per Metal Node:'; oc get machines -A | grep metal |wc -l; \
+        oc get vmi -A -o jsonpath='{.items[*].metadata.labels.kubevirt\.io/nodeName}' \
         | tr ' ' '\n'   \
         | sort  \
         | uniq -c; \
