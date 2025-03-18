@@ -17,23 +17,23 @@ n=""
 
 for n in $namespaces
 do
-	echo "Creating ServiceMeshMember CRs in namespaces $n..."
-	oc apply -f ./service_mesh_member.yaml -n $n
-
+	# echo "Creating ServiceMeshMember CRs in namespaces $n..."
+	# oc apply -f ./service_mesh_member.yaml -n $n
+	#
 	# create OSSM object by creating a new file from the template
 	user_index=$(echo $n | awk '{gsub(/[^0-9]/, ""); print}')
 	sed "s/{{user_index}}/$user_index/g; s/{{deployer_domain}}/$deployer_domain/g" ossm_resources.yaml > ossm_resources_user.yaml
 	oc apply -f ./ossm_resources_user.yaml -n $n
-
-	echo "oc annotating the winweb01 and winweb02 and database"
-	oc patch vm winweb01 -n $n --type=merge --patch="$(cat ossm_patch.yaml)"
-	oc patch vm winweb02 -n $n --type=merge --patch="$(cat ossm_patch.yaml)"
-	oc patch vm database --type=merge --patch='{"spec":{"template":{"metadata":{"annotations":{ "sidecar.istio.io/inject": "true"}}}}}' -n $n
-
-	echo "Restarting VMs..."
-	virtctl restart winweb01 -n $n
-	virtctl restart winweb02 -n $n
-	virtctl restart database -n $n
+	#
+	# # echo "oc annotating the winweb01 and winweb02 and database"
+	# oc patch vm winweb01 -n $n --type=merge --patch="$(cat ossm_patch.yaml)"
+	# oc patch vm winweb02 -n $n --type=merge --patch="$(cat ossm_patch.yaml)"
+	# oc patch vm database --type=merge --patch='{"spec":{"template":{"metadata":{"annotations":{ "sidecar.istio.io/inject": "true"}}}}}' -n $n
+	#
+	# echo "Restarting VMs..."
+	# virtctl restart winweb01 -n $n
+	# virtctl restart winweb02 -n $n
+	# virtctl restart database -n $n
 done
 
 # make the the VM works
